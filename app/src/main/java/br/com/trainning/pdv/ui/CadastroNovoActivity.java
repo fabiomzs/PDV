@@ -10,6 +10,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import java.io.File;
@@ -18,6 +19,7 @@ import java.io.IOException;
 import br.com.trainning.pdv.R;
 import br.com.trainning.pdv.domain.util.ImageInputHelper;
 import butterknife.Bind;
+import butterknife.OnClick;
 
 public class CadastroNovoActivity extends BaseActivity implements ImageInputHelper.ImageActionListener {
 
@@ -29,6 +31,13 @@ public class CadastroNovoActivity extends BaseActivity implements ImageInputHelp
     EditText editTextPreco;
     @Bind(R.id.editTextCodigo)
     EditText editTextCodigo;
+
+    @Bind(R.id.imageViewFoto)
+    ImageView imageViewFoto;
+    @Bind(R.id.imageButtonCamera)
+    ImageButton imageButtonCamera;
+    @Bind(R.id.imageButtonGeleria)
+    ImageButton imageButtonGaleria;
 
     private ImageInputHelper imageInputHelper;
 
@@ -54,6 +63,16 @@ public class CadastroNovoActivity extends BaseActivity implements ImageInputHelp
         });
     }
 
+    @OnClick(R.id.imageButtonGeleria)
+    public void onClickGaleria(){
+        imageInputHelper.selectImageFromGallery();
+    }
+
+    @OnClick(R.id.imageButtonCamera)
+    public void onClickCamera(){
+        imageInputHelper.takePhotoWithCamera();
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -64,14 +83,14 @@ public class CadastroNovoActivity extends BaseActivity implements ImageInputHelp
     public void onImageSelectedFromGallery(Uri uri, File imageFile) {
         // cropping the selected image. crop intent will have aspect ratio 16/9 and result image
         // will have size 800x450
-        imageInputHelper.requestCropImage(uri, 800, 450, 16, 9);
+        imageInputHelper.requestCropImage(uri, 100, 100, 0, 0);
     }
 
     @Override
     public void onImageTakenFromCamera(Uri uri, File imageFile) {
         // cropping the taken photo. crop intent will have aspect ratio 16/9 and result image
         // will have size 800x450
-        imageInputHelper.requestCropImage(uri, 800, 450, 16, 9);
+        imageInputHelper.requestCropImage(uri, 100, 100, 0, 0);
     }
 
     @Override
@@ -80,12 +99,10 @@ public class CadastroNovoActivity extends BaseActivity implements ImageInputHelp
             // getting bitmap from uri
             Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
 
-            // showing bitmap in image view
-            ((ImageView) findViewById(R.id.image)).setImageBitmap(bitmap);
+            imageViewFoto.setImageBitmap(bitmap);
 
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
 }

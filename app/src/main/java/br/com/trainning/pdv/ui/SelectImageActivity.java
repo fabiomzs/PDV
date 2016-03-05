@@ -18,7 +18,7 @@ import br.com.trainning.pdv.domain.util.ImageInputHelper;
 public class SelectImageActivity extends ActionBarActivity implements ImageInputHelper.ImageActionListener {
 
     private ImageInputHelper imageInputHelper;
-    //
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
