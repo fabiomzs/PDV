@@ -5,11 +5,8 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
+import android.support.v7.app.ActionBarActivity;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageView;
 
 import java.io.File;
@@ -17,39 +14,30 @@ import java.io.IOException;
 
 import br.com.trainning.pdv.R;
 import br.com.trainning.pdv.domain.util.ImageInputHelper;
-import butterknife.Bind;
 
-public class CadastroNovoActivity extends BaseActivity implements ImageInputHelper.ImageActionListener {
-
-    @Bind(R.id.editTextDescricao)
-    EditText editTextDescricao;
-    @Bind(R.id.editTextUnidade)
-    EditText editTextUnidade;
-    @Bind(R.id.editTextPreco)
-    EditText editTextPreco;
-    @Bind(R.id.editTextCodigo)
-    EditText editTextCodigo;
+public class SelectImageActivity extends ActionBarActivity implements ImageInputHelper.ImageActionListener {
 
     private ImageInputHelper imageInputHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_cadastro_novo);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        setContentView(R.layout.activity_select_image);
 
         imageInputHelper = new ImageInputHelper(this);
         imageInputHelper.setImageActionListener(this);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.select_photo_from_gallery).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                Log.d("Cadastro", editTextDescricao.getText().toString());
-                Log.d("Cadastro", editTextUnidade.getText().toString());
-                Log.d("Cadastro", editTextPreco.getText().toString());
-                Log.d("Cadastro", editTextCodigo.getText().toString());
+            public void onClick(View v) {
+                imageInputHelper.selectImageFromGallery();
+            }
+        });
+
+        findViewById(R.id.take_picture_with_camera).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                imageInputHelper.takePhotoWithCamera();
             }
         });
     }
@@ -87,5 +75,4 @@ public class CadastroNovoActivity extends BaseActivity implements ImageInputHelp
             e.printStackTrace();
         }
     }
-
 }
