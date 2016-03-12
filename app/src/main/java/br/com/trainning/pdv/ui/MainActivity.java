@@ -28,6 +28,7 @@ import br.com.trainning.pdv.domain.adapter.CustomArrayAdapter;
 import br.com.trainning.pdv.domain.model.Item;
 import br.com.trainning.pdv.domain.model.ItemProduto;
 import br.com.trainning.pdv.domain.model.Produto;
+import br.com.trainning.pdv.domain.util.Util;
 import butterknife.Bind;
 import jim.h.common.android.lib.zxing.config.ZXingLibConfig;
 import jim.h.common.android.lib.zxing.integrator.IntentIntegrator;
@@ -75,7 +76,7 @@ public class MainActivity extends BaseActivity {
                 // set item background
                 openItem.setBackground(new ColorDrawable(Color.rgb(0xC9, 0xC9, 0xCE)));
                 // set item width
-                openItem.setWidth(90);
+                openItem.setWidth(Util.convertPixelsToDp(190.0f, MainActivity.this));
                 // set item title
                 openItem.setTitle("Open");
                 // set item title fontsize
@@ -90,7 +91,7 @@ public class MainActivity extends BaseActivity {
                 // set item background
                 deleteItem.setBackground(new ColorDrawable(Color.rgb(0xF9, 0x3F, 0x25)));
                 // set item width
-                deleteItem.setWidth(90);
+                deleteItem.setWidth(Util.convertPixelsToDp(190.0f,MainActivity.this));
                 // set a icon
                 deleteItem.setIcon(R.drawable.ic_remove_shopping_cart_white_36dp);
                 // add to menu
@@ -116,6 +117,8 @@ public class MainActivity extends BaseActivity {
                 return false;
             }
         });
+
+        popularLista();
     }
 
     @Override
@@ -192,6 +195,8 @@ public class MainActivity extends BaseActivity {
                         item.setQuantidade(1);
 
                         item.save();
+
+                        this.popularLista();
                     }else{
                         Toast.makeText(MainActivity.this, "Produto não localizado!",
                                 Toast.LENGTH_SHORT).show();
@@ -205,8 +210,10 @@ public class MainActivity extends BaseActivity {
     }
 
     public void popularLista(){
+        //List<Item> listaItem = Query.many(Item.class,
+        //        "select * from item where id_compra = ? order by id", 1).get().asList();
         List<Item> listaItem = Query.many(Item.class,
-                "select * from item where id_compra = ? order by id", 1).get().asList();
+                "select * from item order by id").get().asList();
 
         Log.d("TAMANHOLISTA",""+ listaItem.size());
 
@@ -226,12 +233,13 @@ public class MainActivity extends BaseActivity {
             itemProduto.setFoto(produto.getFoto());
             itemProduto.setDescricao(produto.getDescricao());
             itemProduto.setQuantidade(item.getQuantidade());
+            itemProduto.setUnidade(item.getUnidade());
             itemProduto.setPreco(produto.getPreco());
             list.add(itemProduto);
             valorTotal += item.getQuantidade() * produto.getPreco();
             quantidadeItens += item.getQuantidade();
         }
-        getSupportActionBar().setTitle("PDV " + valorTotal);
+        getSupportActionBar().setTitle("PDV " + Util.getFormatedCurrency(String.valueOf(valorTotal)));
         adapter = new CustomArrayAdapter(this, R.layout.list_item, list);
         listView.setAdapter(adapter);
     }

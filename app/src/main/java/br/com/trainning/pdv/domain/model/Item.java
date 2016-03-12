@@ -5,6 +5,7 @@ import se.emilsjolander.sprinkles.annotations.AutoIncrement;
 import se.emilsjolander.sprinkles.annotations.Column;
 import se.emilsjolander.sprinkles.annotations.Key;
 import se.emilsjolander.sprinkles.annotations.Table;
+import se.emilsjolander.sprinkles.typeserializers.StringSerializer;
 
 /**
  * Created by android on 12/03/2016.
@@ -21,6 +22,8 @@ public class Item extends Model {
     private String idProduto;
     @Column("quantidade")
     private int quantidade;
+    @Column("unidade")
+    private String unidade;
 
     public long getId() {
         return id;
@@ -30,12 +33,12 @@ public class Item extends Model {
         this.id = id;
     }
 
-    public int getQuantidade() {
-        return quantidade;
+    public long getIdCompra() {
+        return idCompra;
     }
 
-    public void setQuantidade(int quantidade) {
-        this.quantidade = quantidade;
+    public void setIdCompra(long idCompra) {
+        this.idCompra = idCompra;
     }
 
     public String getIdProduto() {
@@ -46,11 +49,19 @@ public class Item extends Model {
         this.idProduto = idProduto;
     }
 
-    public long getIdCompra() {
-        return idCompra;
+    public int getQuantidade() {
+        return quantidade;
     }
 
-    public void setIdCompra(long idCompra) {
-        this.idCompra = idCompra;
+    public void setQuantidade(int quantidade) {
+        this.quantidade = quantidade;
+    }
+
+    public String getUnidade() {
+        return unidade;
+    }
+
+    public void setUnidade(String unidade) {
+        this.unidade = unidade;
     }
 }
