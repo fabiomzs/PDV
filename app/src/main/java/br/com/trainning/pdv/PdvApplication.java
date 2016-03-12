@@ -27,12 +27,23 @@ public class PdvApplication extends Application {
             protected void doMigration(SQLiteDatabase db) {
                 db.execSQL(
                         "CREATE TABLE produto (" +
-                                "id INTEGER PRIMARY KEY AUTOINCREMENT,"+
-                                "descricao TEXT,"+
-                                "unidade TEXT,"+
-                                "preco REAL,"+
-                                "codigo_barra TEXT,"+
-                                "foto TEXT"+
+                                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                                "descricao TEXT," +
+                                "unidade TEXT," +
+                                "preco REAL," +
+                                "codigo_barra TEXT," +
+                                "latitude REAL," +
+                                "longitude REAL," +
+                                "foto TEXT" +
+                                ")"
+                );
+
+                db.execSQL(
+                        "CREATE TABLE item (" +
+                                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                                "id_compra INTEGER," +
+                                "id_produto TEXT," +
+                                "quantidade INTEGER" +
                                 ")"
                 );
             }
