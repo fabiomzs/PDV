@@ -59,6 +59,8 @@ public class CadastroNovoActivity extends BaseActivity implements ImageInputHelp
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        getSupportActionBar().setTitle("NOVO PRODUTO");
+
         LostApiClient lostApiClient = new LostApiClient.Builder(this).build();
         lostApiClient.connect();
 

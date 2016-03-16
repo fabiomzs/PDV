@@ -71,6 +71,8 @@ public class EditarProdutoActivity extends BaseActivity implements ImageInputHel
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        getSupportActionBar().setTitle("EDITAR PRODUTO");
+
         LostApiClient lostApiClient = new LostApiClient.Builder(this).build();
         lostApiClient.connect();
 
