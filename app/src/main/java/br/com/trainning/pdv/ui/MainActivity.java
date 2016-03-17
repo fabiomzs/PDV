@@ -219,10 +219,9 @@ public class MainActivity extends BaseActivity {
     }
 
     public void popularLista(){
-        //List<Item> listaItem = Query.many(Item.class,
-        //        "select * from item where id_compra = ? order by id", 1).get().asList();
         List<Item> listaItem = Query.many(Item.class,
-                "select * from item order by id").get().asList();
+                "select * from item where id_compra = ? order by id", 1).get().asList();
+        //List<Item> listaItem = Query.many(Item.class, "select * from item").get().asList();
 
         Log.d("TAMANHOLISTA",""+ listaItem.size());
 

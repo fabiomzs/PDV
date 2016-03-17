@@ -89,13 +89,24 @@
         android:layout_alignParentStart="true"
         android:layout_alignEnd="@+id/editTextUnidade" />
 
-    <ImageView
+    <!--<ImageView
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:id="@+id/imageViewFoto"
         android:src="@drawable/product"
         android:layout_below="@+id/editTextCodigo"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true" />-->
+    <com.mikhaellopez.circularimageview.CircularImageView
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:src="@drawable/product"
+        android:id="@+id/imageViewFoto"
+        android:layout_below="@+id/editTextCodigo"
+        app:civ_border_color="#EEEEEE"
+        app:civ_border_width="4dp"
+        app:civ_shadow="true"
+        app:civ_shadow_radius="10"
+        app:civ_shadow_color="#8BC34A"/>
 
     <ImageButton
         android:layout_width="wrap_content"
