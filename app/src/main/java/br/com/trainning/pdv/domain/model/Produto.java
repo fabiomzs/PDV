@@ -1,5 +1,7 @@
 package br.com.trainning.pdv.domain.model;
 
+import com.google.gson.annotations.SerializedName;
+
 import se.emilsjolander.sprinkles.Model;
 import se.emilsjolander.sprinkles.annotations.AutoIncrement;
 import se.emilsjolander.sprinkles.annotations.Column;
@@ -30,6 +32,17 @@ public class Produto extends Model {
     private double latitude;
     @Column("longitude")
     private double longitude;
+    @Column("status")
+    @SerializedName("ativo")
+    private int status;
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
 
     public double getLatitude() {
         return latitude;

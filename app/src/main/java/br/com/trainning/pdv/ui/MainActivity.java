@@ -1,5 +1,6 @@
 package br.com.trainning.pdv.ui;
 
+import android.app.AlertDialog;
 import android.app.DownloadManager;
 import android.content.Intent;
 import android.graphics.Color;
@@ -15,24 +16,34 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.baoyz.swipemenulistview.SwipeMenu;
 import com.baoyz.swipemenulistview.SwipeMenuCreator;
 import com.baoyz.swipemenulistview.SwipeMenuItem;
 import com.baoyz.swipemenulistview.SwipeMenuListView;
+import com.github.javiersantos.materialstyleddialogs.MaterialStyledDialog;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import br.com.trainning.pdv.R;
 import br.com.trainning.pdv.domain.adapter.CustomArrayAdapter;
+import br.com.trainning.pdv.domain.model.Carrinho;
+import br.com.trainning.pdv.domain.model.Compra;
 import br.com.trainning.pdv.domain.model.Item;
 import br.com.trainning.pdv.domain.model.ItemProduto;
 import br.com.trainning.pdv.domain.model.Produto;
+import br.com.trainning.pdv.domain.network.APIClient;
 import br.com.trainning.pdv.domain.util.Util;
 import butterknife.Bind;
+import dmax.dialog.SpotsDialog;
 import jim.h.common.android.lib.zxing.config.ZXingLibConfig;
 import jim.h.common.android.lib.zxing.integrator.IntentIntegrator;
 import jim.h.common.android.lib.zxing.integrator.IntentResult;
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 import se.emilsjolander.sprinkles.CursorList;
 import se.emilsjolander.sprinkles.Query;
 
@@ -45,8 +56,16 @@ public class MainActivity extends BaseActivity {
     private int quantidadeItens;
     private double valorTotal;
     private CustomArrayAdapter adapter;
+    private AlertDialog dialog;
 
     private ZXingLibConfig zxingLibConfig;
+
+    private Callback<List<Produto>> callbackProdutos;
+    private Callback<String> callbackCompra;
+
+    private String idCompra;
+    private Carrinho carrinho;
+    private Compra compra;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +73,23 @@ public class MainActivity extends BaseActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        dialog = new SpotsDialog(this, "Carregando...");
+
+        configureProdutoCallback();
+        configureCompraCallback();
+
+        List<Item> itens = Query.all(Item.class).get().asList();
+        for(Item item:itens){
+            item.delete();
+        }
+
+        idCompra = Util.getUniquePsuedoID();
+
+        carrinho = new Carrinho();
+        carrinho.setIdCompra(idCompra);
+        carrinho.setEncerrada(0);
+        carrinho.setEnviada(0);
 
         zxingLibConfig = new ZXingLibConfig();
         zxingLibConfig.useFrontLight = true;
@@ -172,6 +208,50 @@ public class MainActivity extends BaseActivity {
         }else if(id == R.id.action_edit){
             Intent intent = new Intent(MainActivity.this, EditarProdutoActivity.class);
             startActivity(intent);
+        }else if(id == R.id.action_sincronia){
+            dialog.show();
+            new APIClient().getRestService().getAllProdutos(callbackProdutos);
+        } else if(id == R.id.action_fecha_compra){
+
+            List<Item> itens = Query.all(Item.class).get().asList();
+            int quantidadeItens = 0;
+            double precoTotal = 0.0d;
+            Produto  produto;
+            for(Item it:itens){
+                quantidadeItens += it.getQuantidade();
+                produto = Query.one(Produto.class, "select * from produto where codigo_barra = ?",
+                        it.getId()).get();
+                precoTotal += produto.getPreco() * it.getQuantidade();
+            }
+            compra = new Compra();
+            compra.setCarrinho(carrinho);
+            compra.setItens(itens);
+
+            MaterialStyledDialog dialog = new MaterialStyledDialog(this)
+                    .setTitle("Fechar Compra?")
+                    .setDescription("Quantidade de volumes: " + quantidadeItens +
+                            "\nTotal R$ " + precoTotal)
+                    .setPositive("Sim", new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(MaterialDialog dialog, DialogAction which) {
+
+                            dialog.dismiss();
+                            MainActivity.this.dialog.show();
+                            new APIClient().getRestService().enviarCompra(compra, callbackCompra);
+                            Log.d("MaterialStyledDialogs", "Do something!");
+                        }
+                    })
+                    .setNegative("Não", new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(MaterialDialog dialog, DialogAction which) {
+
+                            dialog.dismiss();
+                            Log.d("MaterialStyledDialogs", "Cancelado pelo usuario");
+                        }
+                    })
+                    .build();
+
+            dialog.show();
         }
 
         return super.onOptionsItemSelected(item);
@@ -197,9 +277,10 @@ public class MainActivity extends BaseActivity {
                             "select * from produto where codigo_barra = ?", result).get();
 
                     if(produto != null){
+
                         Item item = new Item();
                         item.setId(0L);
-                        item.setIdCompra(1L);
+                        item.setIdCompra(idCompra);
                         item.setIdProduto(produto.getCodigoBarras());
                         item.setQuantidade(1);
 
@@ -207,6 +288,7 @@ public class MainActivity extends BaseActivity {
 
                         this.popularLista();
                     }else{
+
                         Toast.makeText(MainActivity.this, "Produto não localizado!",
                                 Toast.LENGTH_SHORT).show();
                     }
@@ -220,15 +302,14 @@ public class MainActivity extends BaseActivity {
 
     public void popularLista(){
         List<Item> listaItem = Query.many(Item.class,
-                "select * from item where id_compra = ? order by id", 1).get().asList();
-        //List<Item> listaItem = Query.many(Item.class, "select * from item").get().asList();
+                "select * from item where id_compra = ? order by id", idCompra).get().asList();
 
         Log.d("TAMANHOLISTA",""+ listaItem.size());
 
         ItemProduto itemProduto;
         Produto produto;
         list = new ArrayList<>();
-        valorTotal=0.0d;
+        valorTotal = 0.0d;
         quantidadeItens = 0;
 
         for(Item item:listaItem){
@@ -236,7 +317,7 @@ public class MainActivity extends BaseActivity {
             produto = Query.one(Produto.class,
                     "select * from produto where codigo_barra = ?", item.getIdProduto()).get();
             itemProduto = new ItemProduto();
-            itemProduto.setIdCompra(1);
+            itemProduto.setIdCompra(idCompra);
             itemProduto.setIdItem(item.getId());
             itemProduto.setFoto(produto.getFoto());
             itemProduto.setDescricao(produto.getDescricao());
@@ -252,4 +333,58 @@ public class MainActivity extends BaseActivity {
         listView.setAdapter(adapter);
     }
 
+    private void configureProdutoCallback() {
+
+        callbackProdutos = new Callback<List<Produto>>() {
+
+            @Override public void success(List<Produto> resultado, Response response) {
+
+                List<Produto> lp = Query.all(Produto.class).get().asList();
+
+                for(Produto p:lp){
+                    p.delete();
+                }
+
+                for(Produto produto:resultado){
+                    produto.setId(0L);
+                    produto.save();
+                }
+
+                dialog.dismiss();
+            }
+
+            @Override public void failure(RetrofitError error) {
+                dialog.dismiss();
+                Log.e("RETROFIT", "Error:" + error.getMessage());
+            }
+        };
+    }
+
+    private void configureCompraCallback() {
+
+        callbackCompra = new Callback<String>() {
+
+            @Override public void success(String resultado, Response response) {
+
+                List<Item> itens = Query.all(Item.class).get().asList();
+                for(Item it:itens){
+                    it.delete();
+                }
+
+                carrinho = new Carrinho();
+                idCompra = Util.getUniquePsuedoID();
+                carrinho.setIdCompra(idCompra);
+                carrinho.setEncerrada(0);
+                carrinho.setEnviada(0);
+                popularLista();
+
+                dialog.dismiss();
+            }
+
+            @Override public void failure(RetrofitError error) {
+                dialog.dismiss();
+                Log.e("RETROFIT", "Error:" + error.getMessage());
+            }
+        };
+    }
 }

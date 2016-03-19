@@ -34,14 +34,15 @@ public class PdvApplication extends Application {
                                 "codigo_barra TEXT," +
                                 "latitude REAL," +
                                 "longitude REAL," +
-                                "foto TEXT" +
+                                "foto TEXT," +
+                                "status INTEGER" +
                                 ")"
                 );
 
                 db.execSQL(
                         "CREATE TABLE item (" +
                                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                                "id_compra INTEGER," +
+                                "id_compra TEXT," +
                                 "id_produto TEXT," +
                                 "quantidade INTEGER" +
                                 ")"

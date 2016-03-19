@@ -1,5 +1,6 @@
 package br.com.trainning.pdv.ui;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -32,10 +33,15 @@ import java.util.List;
 
 import br.com.trainning.pdv.R;
 import br.com.trainning.pdv.domain.model.Produto;
+import br.com.trainning.pdv.domain.network.APIClient;
 import br.com.trainning.pdv.domain.util.Base64Util;
 import br.com.trainning.pdv.domain.util.ImageInputHelper;
 import butterknife.Bind;
 import butterknife.OnClick;
+import dmax.dialog.SpotsDialog;
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 import se.emilsjolander.sprinkles.Query;
 
 public class EditarProdutoActivity extends BaseActivity implements ImageInputHelper.ImageActionListener {
@@ -58,11 +64,15 @@ public class EditarProdutoActivity extends BaseActivity implements ImageInputHel
     @Bind(R.id.imageButtonGeleria)
     ImageButton imageButtonGaleria;
 
+    private AlertDialog dialog;
+
     private ImageInputHelper imageInputHelper;
     private Produto produto;
 
     private double latitude = 0.0d;
     private double longitude = 0.0d;
+
+    Callback<String> callbackAlteraProduto;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +82,9 @@ public class EditarProdutoActivity extends BaseActivity implements ImageInputHel
         setSupportActionBar(toolbar);
 
         getSupportActionBar().setTitle("EDITAR PRODUTO");
+
+        dialog = new SpotsDialog(this, "Enviando para servidor...");
+        configureAlteraProdutoCallback();
 
         LostApiClient lostApiClient = new LostApiClient.Builder(this).build();
         lostApiClient.connect();
@@ -118,11 +131,19 @@ public class EditarProdutoActivity extends BaseActivity implements ImageInputHel
 
                 produto.setLatitude(latitude);
                 produto.setLongitude(longitude);
+                produto.setStatus(0);
 
                 Log.d("LOCATION", "latitude----> " + latitude);
                 Log.d("LOCATION", "longitude---> " + longitude);
 
                 produto.save();
+
+                dialog.show();
+
+                new APIClient().getRestService().updateProduto(produto.getCodigoBarras(),
+                        produto.getDescricao(), produto.getUnidade(), produto.getPreco(),
+                        produto.getFoto(), produto.getStatus(), produto.getLatitude(),
+                        produto.getLongitude(), callbackAlteraProduto);
 
                 Snackbar.make(view, "Produdo alterado com sucesso!", Snackbar.LENGTH_SHORT).show();
             }
@@ -220,5 +241,24 @@ public class EditarProdutoActivity extends BaseActivity implements ImageInputHel
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void configureAlteraProdutoCallback() {
+
+        callbackAlteraProduto = new Callback<String>() {
+
+            @Override public void success(String resultado, Response response) {
+                dialog.dismiss();
+                finish();
+            }
+
+            @Override public void failure(RetrofitError error) {
+                dialog.dismiss();
+                Snackbar.make(findViewById(android.R.id.content).getRootView(),
+                        "Houve um problema de conexão! Por falor verifique e tente novamente!",
+                        Snackbar.LENGTH_LONG).show();
+                Log.e("RETROFIT", "Error:" + error.getMessage());
+            }
+        };
     }
 }
