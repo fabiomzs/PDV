@@ -211,6 +211,9 @@ public class MainActivity extends BaseActivity {
         }else if(id == R.id.action_sincronia){
             dialog.show();
             new APIClient().getRestService().getAllProdutos(callbackProdutos);
+        } else if(id == R.id.action_mapa){
+            Intent intent = new Intent(MainActivity.this, MapaActivity.class);
+            startActivity(intent);
         } else if(id == R.id.action_fecha_compra){
 
             List<Item> itens = Query.all(Item.class).get().asList();
