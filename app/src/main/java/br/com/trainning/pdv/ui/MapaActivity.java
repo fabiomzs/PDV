@@ -45,6 +45,7 @@ public class MapaActivity extends BaseActivity {
 
 
 
+
         for(Produto produto : listaProdutos) {
             Log.d("PRODUTO", produto.toString());
             mapView.addMarker(new MarkerOptions()
